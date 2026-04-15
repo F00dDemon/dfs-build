@@ -94,6 +94,19 @@ public class Build {
    * @return true if the destination is reachable from the start, false otherwise
    */
   public static boolean canReach(Airport start, Airport destination) {
+    Set<Airport> seen = new HashSet<>();
+    return canReach(start, destination, seen);
+  }
+  public static boolean canReach(Airport start, Airport destination, Set<Airport> seen) {
+    if(start == destination) return true;
+    if(seen.contains(start)) return false;
+    seen.add(start);
+
+    for(Airport port: start.getOutboundFlights()){
+      if(canReach(port, destination, seen)){
+        return true;
+      }
+    }
     return false;
   }
 
@@ -107,6 +120,24 @@ public class Build {
    * @return a set of values that cannot be reached from the starting value
    */
   public static <T> Set<T> unreachable(Map<T, List<T>> graph, T starting) {
-    return new HashSet<>();
+    Set<T> seen = unreachable(graph, starting, new HashSet<>());
+    for(T element : seen){
+      if (graph.containsKey(element)){
+        graph.remove(element);
+      }
+    }
+
+    return graph.keySet();
+  }
+  public static <T> Set<T> unreachable(Map<T, List<T>> graph, T starting, Set<T> seen) {
+    if(starting == null) return seen;
+    if(seen.contains(starting) || !graph.containsKey(starting)) return seen;
+    seen.add(starting);
+
+    for(T element : graph.get(starting)){
+      unreachable(graph, element, seen);
+    }
+
+    return seen;
   }
 }
